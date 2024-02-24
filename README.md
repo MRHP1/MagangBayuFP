@@ -2,9 +2,9 @@
 # Magang Bayucaraka 2024 - Final Project
 
 **Identitas Peserta**\
-Nama    : \
-NRP     : \
-Departemen  :
+Nama    : MUhammad Risyad Himawan Putra\
+NRP     : 5025231205\
+Departemen  :Teknik Informatika
 
 Final Project Programming Bayucaraka 2024
 
