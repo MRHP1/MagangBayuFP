@@ -27,7 +27,6 @@ def draw_3x3_grid(image, contour):
             text_x = x + j * cell_width + cell_width // 2 - 10
             text_y = y + i * cell_height + cell_height // 2 + 10
             # Add cell number
-            cv2.putText(image, str(cell_number), (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             # Increment cell number
             cell_number += 1
 
@@ -212,14 +211,20 @@ while True:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
         # Define range of red color in HSV
-        lower_red = np.array([0, 100, 100])
-        upper_red = np.array([10, 255, 255])
+        lower_red1 = np.array([0, 50, 50])
+        upper_red1 = np.array([10, 255, 255])
+        lower_red2 = np.array([170, 50, 50])
+        upper_red2 = np.array([180, 255, 255])
 
         # Threshold the HSV image to get only red colors
-        mask = cv2.inRange(hsv, lower_red, upper_red)
+        mask_red1 = cv2.inRange(hsv, lower_red1, upper_red1)
+        mask_red2 = cv2.inRange(hsv, lower_red2, upper_red2)
+        mask = cv2.bitwise_or(mask_red1, mask_red2)
 
         # Find contours in the mask
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        cv2.drawContours(frame, contours, -1, (0, 255, 0), 3)
 
         # Iterate through the contours and find the centroid of the largest contour
         if contours:
@@ -230,14 +235,23 @@ while True:
             if M["m00"] != 0:
                 cx = int(M["m10"] / M["m00"])
                 cy = int(M["m01"] / M["m00"])
-                # Determine the cell based on centroid position
-                cell_row = cy // (h // 3)
-                cell_col = cx // (w // 3)
-                # Make the move if the cell is within the valid range and empty
-                move = cell_row * 3 + cell_col
-                if 0 <= move < 9 and board.squares[move] is None:
-                    board.squares[move] = 'X'  # Player's move
-                    player_turn = False
+                # Iterate through the cells of the 3x3 grid
+                for i in range(3):
+                    for j in range(3):
+                        # Calculate the top-left corner coordinates of the cell
+                        cell_x = x + j * (w // 3)
+                        cell_y = y + i * (h // 3)
+                        # Calculate the bottom-right corner coordinates of the cell
+                        cell_x_end = cell_x + (w // 3)
+                        cell_y_end = cell_y + (h // 3)
+                        # Check if the centroid falls within the current cell
+                        if cell_x < cx < cell_x_end and cell_y < cy < cell_y_end:
+                            # Check if the cell is empty
+                            if board.squares[i * 3 + j] is None:
+                                board.squares[i * 3 + j] = 'X'  # Player's move
+                                player_turn = False
+                                break
+
 
     else:
         # AI's move
